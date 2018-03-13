@@ -29,17 +29,17 @@ systems from Ericsson.
 
 %debug_package
 %prep
-if [ ! -d erlang-otp ] ; then
+if [ ! -d otp ] ; then
   git clone %{upstream}
 fi
-cd erlang-otp
+cd otp
 git checkout master
 git pull
 git checkout %{tag}
 ./otp_build autoconf
 
 %build
-cd erlang-otp
+cd otp
 CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing" ./configure --enable-dynamic-ssl-lib --enable-hipe --prefix=%{_prefix} --libdir=%{_prefix}/lib64
 chmod -R u+w .
 make
@@ -47,7 +47,7 @@ make docs
 
 %install
 rm -rf $RPM_BUILD_ROOT
-cd erlang-otp
+cd otp
 make DESTDIR=$RPM_BUILD_ROOT install
 make DESTDIR=$RPM_BUILD_ROOT install-docs
 
