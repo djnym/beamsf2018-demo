@@ -90,7 +90,7 @@ clean:
 
 framewerk: setup fw fw-template-erlang-rebar
 
-setup: cowboy_example
+setup:
 	@mkdir -p framewerk/{packages,project}
 
 cowboy_example:
@@ -143,7 +143,7 @@ erlrc: fw-template-erlang-rebar
 	  sudo rpm -i fw-pkgout/erlang-18-erlrc-$(ERLRC_VERSION)-TEST1.x86_64.rpm \
 	)
 
-erlstart: fw
+erlstart: fw erlang
 	@rpm -q erlang-18-erlstart-$(ERLSTART_VERSION)-TEST1 \
 	  2>&1 > /dev/null || \
 	( cd framewerk/packages ; \
@@ -326,7 +326,7 @@ cowboy: fw-template-erlang-rebar cowlib ranch
 	    fw-pkgout/erlang-18-cowboy-$(COWBOY_VERSION)-TEST1.x86_64.rpm \
 	 )
 
-fw-mywebapp: setup erlnode cowboy
+fw-mywebapp: setup cowboy_example erlnode cowboy
 	@rpm -q erlang-18-mywebapp \
 	  2>&1 > /dev/null || \
 	 ( cd framewerk/project ; \
