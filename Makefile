@@ -360,3 +360,5 @@ rs-mywebapp: setup cowboy_example templates
 	   make package ; \
 	   sudo rpm -i _build/prod/rpm/mywebapp-0.1.0-TEST1.x86_64.rpm \
 	 )
+
+all: fw-mywebapp rs-mywebapp
