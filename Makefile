@@ -32,6 +32,10 @@ COWBOY_VERSION=1.1.2
 
 FW_POST_RELEASE_COMMANDS="echo"
 
+setup:
+	@mkdir -p framewerk/{packages,project}
+	@mkdir -p rebar3_plugin/templates
+
 prereqs: erlang rebar rebar3
 
 erlang:
@@ -87,11 +91,6 @@ clean:
 	for d in BUILD BUILDROOT SOURCES SPECS tmp ; do \
 	  test -d prereqs/rpmbuild/$$d && rm -rf prereqs/rpmbuild/$$d/* ; \
 	done
-
-framewerk: setup fw fw-template-erlang-rebar
-
-setup:
-	@mkdir -p framewerk/{packages,project}
 
 cowboy_example:
 	@(rm -rf cowboy_example ; \
@@ -334,7 +333,30 @@ fw-mywebapp: setup cowboy_example erlnode cowboy
 	   fw-init --name mywebapp --revision none --template erlang-rebar \
 	           --with_build_prefix 1 --with_deps cowboy ; \
 	   cd mywebapp ; \
+	   rm -f include/myapp.hrl src/myapp.erl ; \
 	   cp ../../../cowboy_example/* src ; \
 	   ./bootstrap && ./configure && make package ; \
 	   sudo rpm -ivh fw-pkgout/erlang-18-mywebapp-0.0.0-TEST1.x86_64.rpm \
+	 )
+
+templates: setup rebar3
+	@test -d rebar3_plugin/templates/rebar3_service_rpm_template || \
+	  (cd rebar3_plugin/templates ; \
+	   git clone git@github.com:openx/rebar3_service_rpm_template.git ; \
+	   echo "{template_dir, \"`pwd`\"}." >> ~/.config/rebar3/rebar.config \
+	  )
+
+rs-mywebapp: setup cowboy_example templates
+	@rpm -q mywebapp \
+	  2>&1 > /dev/null || \
+	 ( cd rebar3_plugin ; \
+	   rm -rf mywebapp ; \
+	   rebar3 new service_rpm mywebapp ; \
+	   cd mywebapp ; \
+	   mkdir src ; \
+	   cp ../../cowboy_example/* src ; \
+	   sed -i 's/8080/8081/' src/mywebapp_app.erl ; \
+	   sed -i "s/applications below/applications below\n, { cowboy, {git, \"git@github.com:ninenines\/cowboy.git\", {tag, \"1.1.2\"}} }/; s/TODO: add your service's applications here/TODO: add your service's applications here\n        mywebapp,/" rebar.config ; \
+	   make package ; \
+	   sudo rpm -i _build/prod/rpm/mywebapp-0.1.0-TEST1.x86_64.rpm \
 	 )
